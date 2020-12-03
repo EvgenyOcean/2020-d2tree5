@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.signals import post_save
 from django.contrib.auth.models import (AbstractBaseUser, 
                     BaseUserManager, PermissionsMixin)
 from django.utils import timezone
@@ -71,3 +72,14 @@ class Executor(models.Model):
 
     def __str__(self):
         return f'{self.user.username}\'s executor profile'
+
+
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        if instance.is_executor:
+            Executor.objects.create(user=instance)
+        else:
+            Customer.objects.create(user=instance)
+
+
+post_save.connect(create_profile, sender=CustomUser)

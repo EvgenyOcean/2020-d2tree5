@@ -5,7 +5,7 @@ from rest_framework.validators import UniqueValidator
 from .models import CustomUser
 
 
-class UserRegisterSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.ModelSerializer):
     '''
     Validates user model fields. 
     If everything is correct, saves the user and returns current user object
@@ -23,14 +23,28 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     )
     password = serializers.CharField(min_length=8, write_only=True)
 
+    def validate(self, data):
+        if not any([data.get('is_executor'), data.get('is_customer')]):
+            raise serializers.ValidationError('User must be either an executor or a customer')
+        return data
+        
     def create(self, validated_data):
-        user = CustomUser.objects.create_user(validated_data['email'], validated_data['username'],
-             validated_data['password'])
+        if validated_data.get('is_executor'):
+            user = CustomUser.objects.create_user(email=validated_data['email'], username=validated_data['username'],
+                password=validated_data['password'], is_executor=True)
+        elif validated_data.get('is_customer'):
+            user = CustomUser.objects.create_user(email=validated_data['email'], username=validated_data['username'],
+                password=validated_data['password'], is_customer=True)
+
         return user
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'password')
+        fields = ['id', 'username', 'email', 'password', 'is_executor', 'is_customer']
+        extra_fields = {
+            'is_executor': {'write_only': True},
+            'is_customer': {'write_only': True}
+        }
 
 
 class MyAuthTokenSerializer(serializers.Serializer):

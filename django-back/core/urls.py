@@ -15,11 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from users.views import CustomAuthToken, UserCreate, Logout
+from users.views import CustomAuthToken, UserSignUp, Logout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('register/', UserCreate.as_view(), name='register'), 
+    path('register/', UserSignUp.as_view(), name='register'), 
     path('login/', CustomAuthToken.as_view(), name='login'), 
     path('logout/', Logout.as_view(), name='logout'), 
 ]

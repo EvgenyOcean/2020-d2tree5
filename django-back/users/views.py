@@ -7,10 +7,10 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 
-from .serializers import MyAuthTokenSerializer, UserRegisterSerializer
+from .serializers import (MyAuthTokenSerializer, SignUpSerializer)
 
 # Create your views here.
-class UserCreate(APIView):
+class UserSignUp(APIView):
     """ 
     Registration endpoint
     """
@@ -18,7 +18,7 @@ class UserCreate(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, format='json'):
-        serializer = UserRegisterSerializer(data=request.data)
+        serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             if user:
