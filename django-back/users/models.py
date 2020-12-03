@@ -54,14 +54,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['username']
 
 
-class Executor(models.Model):
-    user = models.OneToOneField(CustomUser, related_name='executor', on_delete=models.CASCADE)
-    # offers = models.ManyToManyField(Position, related_name='positions', through='Payment')
-
-    def __str__(self):
-        return f'{self.user.username}\'s executor profile'
-
-
 class Customer(models.Model):
     '''
     if in the future we need to add some properties associated with customers
@@ -71,3 +63,11 @@ class Customer(models.Model):
 
     def __str__(self):
         return f'{self.user.username}\'s customer profile'
+
+
+class Executor(models.Model):
+    user = models.OneToOneField(CustomUser, related_name='executor', on_delete=models.CASCADE)
+    offers = models.ManyToManyField('market.Position', related_name='executors', through='market.Payment')
+
+    def __str__(self):
+        return f'{self.user.username}\'s executor profile'

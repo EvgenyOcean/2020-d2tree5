@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
     # internal
     'users.apps.UsersConfig',
+    'market.apps.MarketConfig',
 
     # external
     'rest_framework',
