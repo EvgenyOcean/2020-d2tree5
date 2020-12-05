@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import CustomUser
+from .models import CustomUser, Customer
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -83,3 +83,16 @@ class MyAuthTokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class CustomerSerliazer(serializers.HyperlinkedModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
+    requests = serializers.HyperlinkedRelatedField(
+        view_name='request-detail',
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'requests']

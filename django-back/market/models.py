@@ -31,7 +31,7 @@ class Position(models.Model):
 
     def __str__(self):
         return f'[{self.request.name}] - {self.name}'
- 
+
 
 class ChangeHistory(models.Model):
     stage = models.CharField(
@@ -41,7 +41,8 @@ class ChangeHistory(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     position = models.ForeignKey(Position, related_name='changes', on_delete=models.CASCADE)
-    executor = models.OneToOneField(Executor, on_delete=models.CASCADE, null=True, blank=True)
+    executor = models.ForeignKey(Executor, related_name='+', 
+                                on_delete=models.CASCADE, null=True, blank=True)
     resolution = models.TextField(blank=True)
 
     class Meta:

@@ -145,3 +145,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ]
 }
+
+if DEBUG:
+    REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].insert(0, 'rest_framework.authentication.SessionAuthentication')
