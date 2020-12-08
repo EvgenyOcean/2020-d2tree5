@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -33,6 +34,7 @@ class CustomAuthToken(ObtainAuthToken):
     Login endpoint
     '''
     serializer_class = MyAuthTokenSerializer
+    authentication_classes = [TokenAuthentication]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
@@ -51,6 +53,8 @@ class Logout(APIView):
     '''
     Logout endpoint
     '''
+    authentication_classes = [TokenAuthentication]
+
     def post(self, request, format=None):
         # simply delete the token to force a login
         request.user.auth_token.delete()
