@@ -1,5 +1,3 @@
-from collections import defaultdict 
-
 from django.db.models import Max, Q, F
 from django.shortcuts import render
 from users.models import CustomUser, Customer
@@ -47,26 +45,28 @@ class RequestDetail(RetrieveAPIView):
     lookup_url_kwarg = 'slug'
 
 
-class RequestList(ListAPIView):
-    serializer_class = PositionSerializer
+class RequestsList(ListAPIView):
+    serializer_class = RequestSerializer
     permission_classes = [IsAuthenticated, OnlyExecutors]
 
     def get_queryset(self):
         status = self.request.GET.get('status')
 
         if not status:
-            return Position.objects.all()
+            return Request.objects.all()
 
-        # filtering to get the last history change; and its stage 
-        # should be exactly what user passed through the url kwarg 'status'
-        return Position.objects.annotate(last_date_created=Max('changes__date_created')) \
+        # if request doesn't have a single position which would have 
+        # last history stage as user specified by ?status=Created
+        # then this request must not be shown
+        filtered_positions =  Position.objects.annotate(last_date_created=Max('changes__date_created')) \
                 .filter(
                     Q(changes__date_created=F('last_date_created')) &
                     Q(changes__stage=status)
                 )
 
+        return Request.objects.filter(positions__in=filtered_positions).distinct()
+
     def list(self, request, *args, **kwargs):
-        new_data = defaultdict(list)
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
@@ -76,9 +76,12 @@ class RequestList(ListAPIView):
 
         serializer = self.get_serializer(queryset, many=True)
         
-        # changing final representation, to make request name stand out
-        for o_dict in serializer.data:
-            new_data[o_dict.pop('request')].append(o_dict)
+        # final filtering to prevent displaying positions 
+        # that have status different from the one that user specified
+        stage = request.GET.get('status')
+        if stage:
+            for user_request in serializer.data:
+                user_request['positions'] = [position for position in user_request['positions'] if position['stage'] == stage]
 
-        return Response(new_data)
+        return Response(serializer.data)
 
