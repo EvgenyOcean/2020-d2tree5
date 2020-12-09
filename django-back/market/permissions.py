@@ -41,5 +41,8 @@ class OnlyConcreteCustomerOrExecutor(BasePermission):
 
         if user in executor_group.user_set.all():
             return True
+        
+        if obj == user:
+            return True
     
-        return obj.owner.user == self.user
+        return obj.owner.user == user

@@ -23,8 +23,15 @@ class PositionSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'stage', 'okpd2', 'okei', 'amount', 'payment', 'request']
 
 
-class RequestSerializer(serializers.ModelSerializer):
+class RequestSerializer(serializers.HyperlinkedModelSerializer):
+    request_name = serializers.ReadOnlyField(source='name')
     positions = PositionSerializer(many=True, read_only=True)
+    owner = serializers.HyperlinkedRelatedField(
+        source='owner.user',
+        lookup_field='username',
+        view_name='customer-detail',
+        read_only=True,
+    )
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -40,4 +47,4 @@ class RequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Request
-        fields = ['name', 'positions']
+        fields = ['request_name', 'owner', 'positions']

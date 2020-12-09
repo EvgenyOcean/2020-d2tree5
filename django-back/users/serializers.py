@@ -86,13 +86,22 @@ class MyAuthTokenSerializer(serializers.Serializer):
 
 
 class CustomerSerliazer(serializers.HyperlinkedModelSerializer):
-    username = serializers.ReadOnlyField(source='user.username')
+    detail = serializers.HyperlinkedIdentityField(view_name="customer-detail", lookup_field="username", lookup_url_kwarg="username")
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'detail']
+
+
+class CustomerDetailSerializer(serializers.HyperlinkedModelSerializer):
     requests = serializers.HyperlinkedRelatedField(
+        source='customer.requests',
         view_name='request-detail',
         many=True,
-        read_only=True
+        read_only=True,
+        lookup_field='slug',
     )
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'requests']
+        fields = ['username', 'first_name', 'about', 'requests']

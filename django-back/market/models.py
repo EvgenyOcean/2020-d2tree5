@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 from django.db.models.signals import post_save
 from users.models import Customer, Executor
 
@@ -8,15 +9,29 @@ class StageChoices(models.TextChoices):
     ASSIGNED = "Assigned", "Assigned to the executer",
     PAID = "Paid", "Payment issued",
     RETURNED = "Returned", "Returned to the executor",
-    CANCELED = "Canceled", "executor removed from payment",
+    CANCELED = "Canceled", "Executor removed from payment",
     EXPIRED = "Expired", "Expired"
 
 
 class Request(models.Model):  
     name = models.CharField(max_length=150)
+    slug = models.SlugField()
     date_created = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField()
     owner = models.ForeignKey(Customer, related_name='requests', on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        slug = slugify(self.name)
+        self.slug = slug
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['slug', 'owner'], 
+                name="%(app_label)s_%(class)s_unique_owner_slug"
+            )
+        ]
 
     def __str__(self):
         return self.name

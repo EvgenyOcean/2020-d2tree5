@@ -3,7 +3,7 @@ from collections import defaultdict
 from django.db.models import Max, Q, F
 from django.shortcuts import render
 from users.models import CustomUser, Customer
-from users.serializers import CustomerSerliazer
+from users.serializers import CustomerSerliazer, CustomerDetailSerializer
 from market.models import Request, Position
 from market.serializers import RequestSerializer, PositionSerializer
 
@@ -25,8 +25,16 @@ def api_root(request, format=None):
     })
 
 
+class CustomerDetail(RetrieveAPIView):
+    queryset = CustomUser.objects.filter(is_customer=True)
+    serializer_class = CustomerDetailSerializer
+    permission_classes = [IsAuthenticated, OnlyConcreteCustomerOrExecutor]
+    lookup_field = 'username'
+    lookup_url_kwarg = 'username'
+
+
 class CustomersList(ListAPIView):
-    queryset = Customer.objects.filter(user__is_customer=True)
+    queryset = CustomUser.objects.filter(is_customer=True)
     serializer_class = CustomerSerliazer
     permission_classes = [IsAuthenticated, OnlyExecutors]
 
@@ -35,12 +43,8 @@ class RequestDetail(RetrieveAPIView):
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
     permission_classes = [IsAuthenticated, OnlyRequestOwnerOrExecutor]
-
-
-class PositionsList(RetrieveAPIView):
-    queryset = Position.objects.all()
-    serializer_class = PositionSerializer
-    permission_classes = [IsAuthenticated, OnlyRequestOwnerOrExecutor]
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
 
 
 class RequestList(ListAPIView):
