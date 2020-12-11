@@ -48,3 +48,17 @@ class RequestSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Request
         fields = ['request_name', 'owner', 'positions']
+
+
+class OfferSerializer(serializers.HyperlinkedModelSerializer):
+    executor = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        source='executor.user',
+        lookup_field='username',
+        view_name='executor-detail'
+    )
+    request_name = serializers.ReadOnlyField(source='position.request.name')
+    position_name = serializers.ReadOnlyField(source='position.name')
+    class Meta:
+        model = Payment
+        fields = ['request_name', 'position_name', 'gmp', 'date_created', 'is_accepted', 'executor']

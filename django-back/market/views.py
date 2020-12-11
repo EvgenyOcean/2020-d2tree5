@@ -1,40 +1,56 @@
 from django.db.models import Max, Q, F
 from django.shortcuts import render
-from users.models import CustomUser, Customer
-from users.serializers import CustomerSerliazer, CustomerDetailSerializer
+from users.models import CustomUser, Customer, Executor
+from users.serializers import (CustomersListSerializer, CustomerDetailSerializer,
+                            ExecutorDetailSerializer, ExecutorsListSerializer)
 from market.models import Request, Position
-from market.serializers import RequestSerializer, PositionSerializer
+from market.serializers import (RequestSerializer, PositionSerializer)
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from .permissions import (OnlyExecutors, OnlyRequestOwnerOrExecutor,
-                          OnlyConcreteCustomerOrExecutor)
+                          OnlyConcreteCustomerOrExecutor, OnlyConcreteExecutor)
 
 # Create your views here.
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
         'customers': reverse('customers-list', request=request, format=format),
+        'executors': reverse('executors-list', request=request, format=format),
         'requests': reverse('requests-list', request=request, format=format),
     })
 
 
 class CustomerDetail(RetrieveAPIView):
-    queryset = CustomUser.objects.filter(is_customer=True)
+    queryset = Customer.objects.filter(user__is_customer=True)
     serializer_class = CustomerDetailSerializer
     permission_classes = [IsAuthenticated, OnlyConcreteCustomerOrExecutor]
-    lookup_field = 'username'
+    lookup_field = 'user__username'
     lookup_url_kwarg = 'username'
 
 
 class CustomersList(ListAPIView):
-    queryset = CustomUser.objects.filter(is_customer=True)
-    serializer_class = CustomerSerliazer
+    queryset = Customer.objects.filter(user__is_customer=True)
+    serializer_class = CustomersListSerializer
     permission_classes = [IsAuthenticated, OnlyExecutors]
+
+
+class ExecutorDetail(RetrieveAPIView):
+    queryset = Executor.objects.filter(user__is_executor=True)
+    serializer_class = ExecutorDetailSerializer
+    permission_classes = [IsAuthenticated, OnlyConcreteExecutor]
+    lookup_field = 'user__username'
+    lookup_url_kwarg = 'username'
+
+
+class ExecutorsList(ListAPIView):
+    queryset = Executor.objects.filter(user__is_executor=True)
+    serializer_class = ExecutorsListSerializer
+    permission_classes = [IsAdminUser]
 
 
 class RequestDetail(RetrieveAPIView):
@@ -43,6 +59,13 @@ class RequestDetail(RetrieveAPIView):
     permission_classes = [IsAuthenticated, OnlyRequestOwnerOrExecutor]
     lookup_field = 'slug'
     lookup_url_kwarg = 'slug'
+
+    def get_queryset(self):
+        username = self.kwargs.get('username')
+        if not username:
+            return Request.objects.none()
+        else:
+            return Request.objects.filter(owner__user__username=username)
 
 
 class RequestsList(ListAPIView):

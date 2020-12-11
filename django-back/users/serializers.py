@@ -1,8 +1,14 @@
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
+
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import CustomUser, Customer
+from rest_framework.reverse import reverse
+
+from .models import CustomUser, Customer, Executor
+from market.models import Request, Payment
+from market.serializers import OfferSerializer
+from .serializers_fields import RequestHyperlink, CustomerHyperlink
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -85,23 +91,43 @@ class MyAuthTokenSerializer(serializers.Serializer):
         return attrs
 
 
-class CustomerSerliazer(serializers.HyperlinkedModelSerializer):
-    detail = serializers.HyperlinkedIdentityField(view_name="customer-detail", lookup_field="username", lookup_url_kwarg="username")
+class CustomersListSerializer(serializers.HyperlinkedModelSerializer):
+    detail = CustomerHyperlink(view_name='customer-detail')
+    username = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
-        model = CustomUser
+        model = Customer
         fields = ['username', 'detail']
 
 
-class CustomerDetailSerializer(serializers.HyperlinkedModelSerializer):
-    requests = serializers.HyperlinkedRelatedField(
-        source='customer.requests',
-        view_name='request-detail',
-        many=True,
-        read_only=True,
-        lookup_field='slug',
-    )
-
+class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'about', 'requests']
+        fields = ['username', 'first_name', 'about']
+
+
+class CustomerDetailSerializer(serializers.HyperlinkedModelSerializer):
+    user = CustomUserSerializer()
+    requests = RequestHyperlink(many=True)
+
+    class Meta:
+        model = Customer
+        fields = ['user', 'requests']
+
+
+class ExecutorDetailSerializer(serializers.HyperlinkedModelSerializer):
+    user = CustomUserSerializer()
+    offers = OfferSerializer(source='executors', many=True)
+
+    class Meta:
+        model = Executor
+        fields = ['user', 'offers']
+
+
+class ExecutorsListSerializer(serializers.HyperlinkedModelSerializer):
+    detail = CustomerHyperlink(view_name='executor-detail')
+    username = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = Executor
+        fields = ['username', 'detail']

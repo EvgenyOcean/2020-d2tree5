@@ -42,7 +42,19 @@ class OnlyConcreteCustomerOrExecutor(BasePermission):
         if user in executor_group.user_set.all():
             return True
         
-        if obj == user:
+        if obj == user.customer:
             return True
     
         return obj.owner.user == user
+
+
+class OnlyConcreteExecutor(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        executor_group = Group.objects.get(name='executors')
+
+        if user.is_staff:
+            return True
+
+        return user == obj
+            
