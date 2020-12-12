@@ -5,7 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: rgb(29, 167, 144);
+  background: black;
 }
 
 code {
@@ -19,4 +19,37 @@ code {
 
 li.requests:hover{
   background-color: rgba(0, 204, 255, 0.1) !important;
+}
+
+.customer-row, 
+.executor-row{
+  cursor: pointer;
+}
+
+.single-request{
+  cursor: pointer;
+}
+
+.single-request:hover{
+  text-decoration: underline !important;
+}
+
+.requests-list{
+  margin-top: 2rem;
+}
+
+.requests-list h3{
+  color: gold;
+}
+
+.requests-list h5{
+  color: wheat;
+}
+
+.requests-list .card{
+  background-color: rgb(52 58 64) !important;
+}
+
+.requests-list .card .card-body{
+  color: #dddddd;
 }

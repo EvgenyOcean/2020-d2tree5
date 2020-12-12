@@ -43,6 +43,7 @@ export const HomeAPI = async () => {
   // TODO: display an error
 }
 
+
 export const RequestDetailAPI = async (url) => {
   let token = localStorage.getItem('Authorization');
   const instance = axios.create({
@@ -52,4 +53,64 @@ export const RequestDetailAPI = async (url) => {
     }
   })
   return await instance.get(url);
+}
+
+
+export const CustomerDetailAPI = async (url) => {
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.get(url);
+}
+
+
+export const CustomersListAPI = async () => {
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.get('/customers/');
+}
+
+
+export const ExecutorDetailAPI = async (url) => {
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.get(url);
+}
+
+
+export const ExecutorsListAPI = async () => {
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.get('/executors/');
+}
+
+
+export const RequestsListAPI = async (search='') => {
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.get('/requests/' + search);
 }

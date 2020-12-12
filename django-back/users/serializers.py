@@ -3,10 +3,9 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from rest_framework.reverse import reverse
 
 from .models import CustomUser, Customer, Executor
-from market.models import Request, Payment
+from market.models import Request
 from market.serializers import OfferSerializer
 from .serializers_fields import RequestHyperlink, CustomerHyperlink
 

@@ -45,7 +45,7 @@ class OnlyConcreteCustomerOrExecutor(BasePermission):
         if obj == user.customer:
             return True
     
-        return obj.owner.user == user
+        return obj.user == user
 
 
 class OnlyConcreteExecutor(BasePermission):
