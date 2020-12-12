@@ -5,9 +5,18 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: rgb(29, 167, 144);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.requests{
+  cursor: pointer;
+}
+
+li.requests:hover{
+  background-color: rgba(0, 204, 255, 0.1) !important;
 }

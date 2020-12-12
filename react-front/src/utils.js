@@ -8,8 +8,10 @@ export const handleFormSubmit = async (action, e) => {
   try{
     if (action === 'login'){
       let response = await AuthAPI('login', data);
-      const {token} = response.data;
+      const {token, username, role} = response.data;
       localStorage.setItem('Authorization', 'Token ' + token);
+      localStorage.setItem('username', username);
+      localStorage.setItem('role', role);
     } else if (action === 'register'){
       await AuthAPI('register', data);
     }
@@ -48,6 +50,14 @@ export const handleFormSubmit = async (action, e) => {
   } finally {
     return result;
   }
+}
+
+export const getStorageData = () => {
+  const username = localStorage.getItem('username');
+  const token = localStorage.getItem('Authorization');
+  const role = localStorage.getItem('role');
+
+  return {username, token, role}
 }
 
 export default handleFormSubmit;

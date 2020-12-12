@@ -44,8 +44,8 @@ class CustomAuthToken(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
-            'user_id': user.pk,
-            'email': user.email
+            'username': user.username,
+            'role': 'admin' if user.is_staff else 'executors' if user.is_executor else 'customers'
         })
 
 

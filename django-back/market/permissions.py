@@ -24,9 +24,9 @@ class OnlyRequestOwnerOrExecutor(BasePermission):
             return True
         
         if isinstance(obj, Request):
-            return obj.owner == user
+            return obj.owner == user.customer
         elif isinstance(obj, Position):
-            return obj.request.owner == user
+            return obj.request.owner == user.customer
         else:
             return False
  
@@ -56,5 +56,4 @@ class OnlyConcreteExecutor(BasePermission):
         if user.is_staff:
             return True
 
-        return user == obj
-            
+        return user.executor == obj
