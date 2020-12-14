@@ -6,13 +6,16 @@ from users.serializers import (CustomersListSerializer, CustomerDetailSerializer
 from market.models import Request, Position
 from market.serializers import (RequestSerializer, PositionSerializer)
 
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import (ListAPIView, RetrieveAPIView, GenericAPIView,
+                                    CreateAPIView)
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework import status
+from rest_framework import serializers
 
-from .permissions import (OnlyExecutors, OnlyRequestOwnerOrExecutor,
+from .permissions import (OnlyExecutors, OnlyRequestOwnerOrExecutor, OnlyCustomers,
                           OnlyConcreteCustomerOrExecutor, OnlyConcreteExecutor)
 
 # Create your views here.
@@ -108,3 +111,33 @@ class RequestsList(ListAPIView):
 
         return Response(serializer.data)
 
+
+class RequestCreate(CreateAPIView):
+    serializer_class = RequestSerializer
+    queryset = Request.objects.all()
+    permission_classes = [IsAuthenticated, OnlyCustomers]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.customer)
+
+
+class PositionCreate(GenericAPIView):
+    serializer_class = PositionSerializer
+    queryset = Position.objects.all()
+    permission_classes = [IsAuthenticated, OnlyCustomers]
+
+    def post(self, http_request, **kwargs):
+        data = http_request.data
+        try:
+            request = Request.objects.get(name=data['request_name'])
+        except Exception as err:
+            return Response({'message': 'Request name has not been provided or incorrect!'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not http_request.user.customer == request.owner:
+            return Response({"message": "Not Authorized"}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            position = serializer.save(request=request)
+            s_position = self.get_serializer(position)
+            return Response(s_position.data, status=status.HTTP_201_CREATED)

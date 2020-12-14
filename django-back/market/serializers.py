@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Request, Position, Payment
+from users.models import CustomUser
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -12,7 +13,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class PositionSerializer(serializers.ModelSerializer):
     request = serializers.ReadOnlyField(source='request.name')
-    payment = PaymentSerializer(source='positions', many=True)
+    payment = PaymentSerializer(source='positions', many=True, read_only=True)
     stage = serializers.SerializerMethodField()
 
     def get_stage(self, obj):
@@ -24,13 +25,12 @@ class PositionSerializer(serializers.ModelSerializer):
 
 
 class RequestSerializer(serializers.HyperlinkedModelSerializer):
-    request_name = serializers.ReadOnlyField(source='name')
     positions = PositionSerializer(many=True, read_only=True)
     owner = serializers.HyperlinkedRelatedField(
+        read_only=True,
         source='owner.user',
         lookup_field='username',
         view_name='customer-detail',
-        read_only=True,
     )
 
     def to_representation(self, instance):
@@ -47,7 +47,10 @@ class RequestSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Request
-        fields = ['request_name', 'owner', 'positions']
+        fields = ['request_name', 'owner', 'positions', 'deadline']
+        extra_kwargs = {
+            'request_name': {"source": "name"}
+        }
 
 
 class OfferSerializer(serializers.HyperlinkedModelSerializer):

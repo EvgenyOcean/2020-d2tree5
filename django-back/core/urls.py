@@ -23,4 +23,5 @@ urlpatterns = [
     path('login/', CustomAuthToken.as_view(), name='login'), 
     path('logout/', Logout.as_view(), name='logout'), 
     path('api/', include('market.urls')),
+    path('api-auth/', include('rest_framework.urls')),
 ]

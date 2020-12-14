@@ -12,6 +12,15 @@ class OnlyExecutors(BasePermission):
         return user in executor_group.user_set.all()
 
 
+class OnlyCustomers(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_customer:
+            return True
+        else:
+            return False
+
+
 class OnlyRequestOwnerOrExecutor(BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user

@@ -9,4 +9,6 @@ urlpatterns = [
     path('requests/<str:username>/<str:slug>/', views.RequestDetail.as_view(), name='request-detail'),
     path('executors/', views.ExecutorsList.as_view(), name='executors-list'), 
     path('executors/<str:username>/', views.ExecutorDetail.as_view(), name='executor-detail'), 
+    path('create-request/', views.RequestCreate.as_view(), name="create-request"),
+    path('add-position/', views.PositionCreate.as_view(), name="add-position")
 ]
