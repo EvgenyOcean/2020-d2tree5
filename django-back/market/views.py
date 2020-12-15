@@ -3,8 +3,9 @@ from django.shortcuts import render
 from users.models import CustomUser, Customer, Executor
 from users.serializers import (CustomersListSerializer, CustomerDetailSerializer,
                             ExecutorDetailSerializer, ExecutorsListSerializer)
-from market.models import Request, Position
-from market.serializers import (RequestSerializer, PositionSerializer)
+from market.models import Request, Position, Payment, ChangeHistory
+from market.serializers import (RequestSerializer, PositionSerializer, 
+                                OfferSerializer, ChangeHistorySerializer)
 
 from rest_framework.generics import (ListAPIView, RetrieveAPIView, GenericAPIView,
                                     CreateAPIView)
@@ -141,3 +142,42 @@ class PositionCreate(GenericAPIView):
             position = serializer.save(request=request)
             s_position = self.get_serializer(position)
             return Response(s_position.data, status=status.HTTP_201_CREATED)
+
+
+class OfferCreate(CreateAPIView):
+    serializer_class = OfferSerializer
+    queryset = Payment.objects.all()
+    permission_classes = [IsAuthenticated, OnlyExecutors]
+
+    def perform_create(self, serializer):
+        serializer.save(executor=self.request.user.executor)
+
+
+class OfferUpdate(GenericAPIView):
+    serializer_class = ChangeHistorySerializer
+    queryset = ChangeHistory.objects.all()
+    permission_classes = [IsAuthenticated, OnlyCustomers]
+
+    def put(self, *args, **kwargs):
+        customer = self.request.user.customer
+        data = self.request.data
+        try:
+            payment = Payment.objects.get(id=data['payment_id'])
+        except Exception as err:
+            return Response({'message': 'Offer has not been provided or incorrect!'}, status=status.HTTP_400_BAD_REQUEST)
+
+        print(payment.position.request.owner, customer)
+        if payment.position.request.owner != customer:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        new_stage = ''
+        if data.get('stage') == 'Assigned':
+            print('its assgined NOW!!!')
+            payment.is_accepted = True
+            payment.save()
+
+        serializer = self.get_serializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save(executor=payment.executor, position=payment.position)
+            return Response(status=status.HTTP_201_CREATED)

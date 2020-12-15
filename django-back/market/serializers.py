@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Request, Position, Payment
+from .models import Request, Position, Payment, ChangeHistory
 from users.models import CustomUser
 
 
@@ -53,7 +53,7 @@ class RequestSerializer(serializers.HyperlinkedModelSerializer):
         }
 
 
-class OfferSerializer(serializers.HyperlinkedModelSerializer):
+class OfferSerializer(serializers.ModelSerializer):
     executor = serializers.HyperlinkedRelatedField(
         read_only=True,
         source='executor.user',
@@ -62,6 +62,25 @@ class OfferSerializer(serializers.HyperlinkedModelSerializer):
     )
     request_name = serializers.ReadOnlyField(source='position.request.name')
     position_name = serializers.ReadOnlyField(source='position.name')
+
     class Meta:
         model = Payment
-        fields = ['request_name', 'position_name', 'gmp', 'date_created', 'is_accepted', 'executor']
+        fields = ['request_name', 'position_name', 'gmp', 'date_created', 'is_accepted', 'executor', 'position']
+        extra_kwargs = {
+            'position': {'write_only': True}, 
+            'is_accepted': {'read_only': True},
+        }
+
+        def create(self, validated_data):
+            return Payment.objects.create(
+                executor=validated_data['executor'],
+                position=validated_data['position'], 
+                gmp=validated_data['gmp'],
+            )
+
+
+class ChangeHistorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ChangeHistory
+        fields = ['stage', 'resolution']

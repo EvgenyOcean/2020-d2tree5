@@ -10,5 +10,7 @@ urlpatterns = [
     path('executors/', views.ExecutorsList.as_view(), name='executors-list'), 
     path('executors/<str:username>/', views.ExecutorDetail.as_view(), name='executor-detail'), 
     path('create-request/', views.RequestCreate.as_view(), name="create-request"),
-    path('add-position/', views.PositionCreate.as_view(), name="add-position")
+    path('add-position/', views.PositionCreate.as_view(), name="add-position"),
+    path('add-offer/', views.OfferCreate.as_view(), name="add-offer"),
+    path('update-offer/', views.OfferUpdate.as_view(), name="update-offer"),
 ]
