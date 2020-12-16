@@ -1,5 +1,5 @@
-# d2tree5 [In Progress]
-Simply the best b2b marketplace ever! (not really :)
+# d2tree5 
+Simply the best b2b marketplace ever! (not really :). 
 
 ### Technologies uesd: 
 <hr />
@@ -17,5 +17,14 @@ Simply the best b2b marketplace ever! (not really :)
 3. Once customer recieves whatever executor offered the position can be closed. Customer can demand refund if he's not satisfied.
 
 ### Installation:
-<hr />
-Nah, not yet... :)
+
+1. cd django
+2. pipenv install
+3. Migrate
+4. Create groups: customers, executors
+<hr>
+
+1. cd react
+2. npm install
+3. npm start
+4. make sure to confgiure proper urls for axios (if needed)
