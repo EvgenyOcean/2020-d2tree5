@@ -8,7 +8,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
-        fields = ['executor', 'gmp', 'date_created', 'is_accepted']
+        fields = ['id', 'executor', 'gmp', 'date_created', 'is_accepted']
 
 
 class PositionSerializer(serializers.ModelSerializer):
@@ -47,9 +47,10 @@ class RequestSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Request
-        fields = ['request_name', 'owner', 'positions', 'deadline']
+        fields = ['id', 'request_name', 'owner', 'positions', 'deadline']
         extra_kwargs = {
-            'request_name': {"source": "name"}
+            'request_name': {"source": "name"},
+            'deadline': {'read_only': True}
         }
 
 
@@ -62,21 +63,22 @@ class OfferSerializer(serializers.ModelSerializer):
     )
     request_name = serializers.ReadOnlyField(source='position.request.name')
     position_name = serializers.ReadOnlyField(source='position.name')
+    position_id = serializers.IntegerField(required=True, write_only=True)
 
     class Meta:
         model = Payment
-        fields = ['request_name', 'position_name', 'gmp', 'date_created', 'is_accepted', 'executor', 'position']
+        fields = ['request_name', 'position_name', 'gmp', 'date_created', 'is_accepted', 'executor', 'position_id']
         extra_kwargs = {
-            'position': {'write_only': True}, 
             'is_accepted': {'read_only': True},
+            'position': {'write_only': True, }
         }
 
-        def create(self, validated_data):
-            return Payment.objects.create(
-                executor=validated_data['executor'],
-                position=validated_data['position'], 
-                gmp=validated_data['gmp'],
-            )
+    def create(self, validated_data):
+        return Payment.objects.create(
+            executor=validated_data['executor'],
+            position=validated_data['position'], 
+            gmp=validated_data['gmp'],
+        )
 
 
 class ChangeHistorySerializer(serializers.ModelSerializer):

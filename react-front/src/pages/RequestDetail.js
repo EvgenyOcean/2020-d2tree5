@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { RequestDetailAPI } from '../api';
-import { Link } from 'react-router-dom';
+import { RequestDetailAPI, AcceptOfferAPI } from '../api';
+import { Link, useHistory } from 'react-router-dom';
 
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -13,6 +13,7 @@ import Button from 'react-bootstrap/Button';
 const RequestDetail = (props) => {
   const [requestDetails, setRequestDetails] = useState({});
   const path = props.location.pathname;
+  let history = useHistory();
   useEffect(()=>{
     if (Object.getOwnPropertyNames(requestDetails).length === 0){
       (async () => {
@@ -26,6 +27,30 @@ const RequestDetail = (props) => {
       })()
     }
   }, [requestDetails, path])
+
+  const handleNewOffer = (e) => {
+    let el = e.target;
+    let possition_id = el.closest('.position').id;
+    props.setOfferModal([true, possition_id]);
+  }
+
+  const handleNewPosition = async (e) => {
+    props.setPositionModal([true, requestDetails.id]);
+  }
+
+  const handleAccept = async (e) => {
+    let payment_id = e.target.closest('.offer').id;
+    let stage = 'Assigned';
+    let resolution = "An offer just got accepted!";
+    try{
+      await AcceptOfferAPI({payment_id, stage, resolution});
+    } catch(err){
+      console.log(err);
+    }
+    // to avoid fiddling with chaning the button
+    // and blah blah blah
+    history.go(0);
+  }
 
   if (requestDetails['request_name']){
     let requestName = requestDetails['request_name'];
@@ -44,7 +69,7 @@ const RequestDetail = (props) => {
             <Accordion className="requests-list">
               {positions.map(position => {
                 return (
-                  <Card key={position.id}>
+                  <Card key={position.id} id={position.id} className="position">
                     <Card.Header>
                       <Accordion.Toggle as={Button} variant="link" eventKey={position.id} className="text-white">
                         {position.name}
@@ -61,7 +86,7 @@ const RequestDetail = (props) => {
                         <Accordion defaultActiveKey="0">
                           {position.payment.map((offer, ind) => {
                             return (
-                              <Card key={ind}>
+                              <Card key={ind} id={offer.id} className="offer">
                                 <Card.Header>
                                   <Accordion.Toggle as={Button} variant="link" eventKey={ind + 1}>
                                     Offered by: {offer.executor}
@@ -73,19 +98,21 @@ const RequestDetail = (props) => {
                                       <li>GMP: {offer.gmp}</li>
                                       <li>Accepted: <span className={offer.is_accepted ? 'text-success' : 'text-danger'}>{offer.is_accepted ? "YES" : "NO"}</span></li>
                                     </ul>
-                                    {ownerUsername === localStorage.getItem('username') && <Button variant="success" className="ml-3 mb-3">Accept!</Button>}
+                                    {ownerUsername === localStorage.getItem('username') && <Button variant="success" className="ml-3 mb-3" onClick={handleAccept}>Accept</Button>}
                                   </div>
                                 </Accordion.Collapse>
                               </Card>
                             )
                           })}
                         </Accordion>
+                      {'executors' === localStorage.getItem('role') && <Button variant="success" className="ml-3 my-3" onClick={handleNewOffer}>Make Offer</Button>}
                       </Card.Body>
                     </Accordion.Collapse>
                   </Card>
                 )
               })}
             </Accordion>
+            {ownerUsername === localStorage.getItem('username') && <Button variant="success" className="ml-3 mb-3 mt-3" onClick={handleNewPosition}>New Position</Button>}
           </Col>
         </Row>
       </Container>

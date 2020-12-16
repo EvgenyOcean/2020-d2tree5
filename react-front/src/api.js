@@ -114,3 +114,52 @@ export const RequestsListAPI = async (search='') => {
   })
   return await instance.get('/requests/' + search);
 }
+
+
+export const CreateOfferAPI = async (data) => {
+  console.log("HERE!!!");
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.post('/add-offer/', data);
+}
+
+
+export const CreatePositionAPI = async (data) => {
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.post('/add-position/', data);
+}
+
+
+export const AcceptOfferAPI = async (data) => {
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.put('/update-offer/', data);
+}
+
+
+export const CreateRequestAPI = async (data) => {
+  let token = localStorage.getItem('Authorization');
+  const instance = axios.create({
+    baseURL: HOME_URL,
+    headers: {
+      'Authorization': token,
+    }
+  })
+  return await instance.post('/create-request/', data);
+}

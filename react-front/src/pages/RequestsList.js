@@ -9,7 +9,7 @@ import Card from 'react-bootstrap/Card';
 import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
 
-export const RequestsList = () => {
+export const RequestsList = (props) => {
   const [requests, setRequests] = useState({loading: true, data: []});
   const location = useLocation();
   useEffect(()=>{
@@ -25,6 +25,12 @@ export const RequestsList = () => {
       })();
     }
   }, [requests, location.search])
+
+  const handleNewOffer = (e) => {
+    let el = e.target;
+    let possition_id = el.closest('.position').id;
+    props.setOfferModal([true, possition_id]);
+  }
 
   if (requests.loading){
     return (
@@ -43,7 +49,7 @@ export const RequestsList = () => {
         <Accordion>
           {request.positions.map(position => {
             return (
-              <Card key={position.id}>
+              <Card key={position.id} id={position.id} className="position">
                 <Card.Header>
                   <Accordion.Toggle as={Button} variant="link" eventKey={position.id} className="text-white">
                     {position.name}
@@ -79,6 +85,7 @@ export const RequestsList = () => {
                         )
                       })}
                     </Accordion>
+                    {'executors' === localStorage.getItem('role') && <Button variant="success" className="ml-3 my-3" onClick={handleNewOffer}>Make Offer!</Button>}
                   </Card.Body>
                 </Accordion.Collapse>
               </Card>

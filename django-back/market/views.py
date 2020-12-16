@@ -1,3 +1,4 @@
+import datetime
 from django.db.models import Max, Q, F
 from django.shortcuts import render
 from users.models import CustomUser, Customer, Executor
@@ -15,6 +16,7 @@ from rest_framework.reverse import reverse
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from .permissions import (OnlyExecutors, OnlyRequestOwnerOrExecutor, OnlyCustomers,
                           OnlyConcreteCustomerOrExecutor, OnlyConcreteExecutor)
@@ -119,7 +121,12 @@ class RequestCreate(CreateAPIView):
     permission_classes = [IsAuthenticated, OnlyCustomers]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user.customer)
+        try:
+            # you also wanna check if deadline is legit
+            deadline = datetime.datetime.fromisoformat(self.request.data.get('deadline'))
+        except ValueError as err:
+            raise ValidationError(str(err))
+        serializer.save(owner=self.request.user.customer, deadline=deadline)
 
 
 class PositionCreate(GenericAPIView):
@@ -130,15 +137,15 @@ class PositionCreate(GenericAPIView):
     def post(self, http_request, **kwargs):
         data = http_request.data
         try:
-            request = Request.objects.get(name=data['request_name'])
+            request = Request.objects.get(id=data['request_id'])
         except Exception as err:
-            return Response({'message': 'Request name has not been provided or incorrect!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Request id has not been provided or incorrect!'}, status=status.HTTP_400_BAD_REQUEST)
         
         if not http_request.user.customer == request.owner:
             return Response({"message": "Not Authorized"}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             position = serializer.save(request=request)
             s_position = self.get_serializer(position)
             return Response(s_position.data, status=status.HTTP_201_CREATED)
@@ -150,7 +157,13 @@ class OfferCreate(CreateAPIView):
     permission_classes = [IsAuthenticated, OnlyExecutors]
 
     def perform_create(self, serializer):
-        serializer.save(executor=self.request.user.executor)
+        data = self.request.data
+        try:
+            position = Position.objects.get(id=data['position_id'])
+        except (KeyError, Position.DoesNotExist):
+            raise ValidationError('Position is missing or incorrect!')
+
+        serializer.save(executor=self.request.user.executor, position=position)
 
 
 class OfferUpdate(GenericAPIView):
@@ -172,7 +185,8 @@ class OfferUpdate(GenericAPIView):
 
         new_stage = ''
         if data.get('stage') == 'Assigned':
-            print('its assgined NOW!!!')
+            # TODO: can only one offer be accepted at a time?
+            # totally depends on business logic
             payment.is_accepted = True
             payment.save()
 
